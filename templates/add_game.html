@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Add New Game</title>
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <!-- jQuery (required by Select2) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+</head>
+<body>
+    <h1>Add a New Game</h1>
+    <form method="post" action="{{ url_for('add_game') }}">
+        <label>Title:<br />
+            <input type="text" name="title" required />
+        </label><br /><br />
+
+        <label>Platform:<br />
+            <select name="platform" id="platform-select" style="width: 300px;">
+                <option></option> <!-- for placeholder -->
+                {% for platform in platforms %}
+                    <option value="{{ platform }}">{{ platform }}</option>
+                {% endfor %}
+            </select>
+        </label><br /><br />
+
+
+        <label>Status:<br />
+            <select name="status" id="status-select" style="width: 300px;">
+                <option></option>
+                {% for status in statuses %}
+                    <option value="{{ status }}">{{ status }}</option>
+                {% endfor %}
+            </select>
+        </label><br /><br />
+
+
+        <label>Rating (1-10):<br />
+            <input type="number" name="rating" min="1" max="10" />
+        </label><br /><br />
+
+        <label>Cover Image URL:<br />
+            <input type="url" name="cover_url" />
+        </label><br /><br />
+
+        <label>Notes:<br />
+            <textarea name="notes" rows="4" cols="40"></textarea>
+        </label><br /><br />
+
+        <label>Start Date:<br />
+            <input type="date" name="start_date" />
+        </label><br /><br />
+
+        <label>Finish Date:<br />
+            <input type="date" name="finish_date" />
+        </label><br /><br />
+
+        <button type="submit">Add Game</button>
+    </form>
+    <br />
+    <a href="{{ url_for('home') }}">Back to games list</a>
+
+    <script>
+    $(document).ready(function() {
+        $('#platform-select').select2({
+        placeholder: "Select or type platform",
+        tags: true,
+        allowClear: true
+        });
+        $('#status-select').select2({
+        placeholder: "Select or type status",
+        tags: true,
+        allowClear: true
+        });
+    });
+    </script>
+
+
+</body>
+</html>

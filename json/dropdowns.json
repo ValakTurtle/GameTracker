@@ -1,0 +1,9 @@
+{
+  "platforms": [
+    "PC", "PlayStation 5", "PlayStation 4", "Xbox Series X", "Xbox One",
+    "Nintendo Switch", "Mobile", "Other"
+  ],
+  "statuses": [
+    "Backlog", "Playing", "Completed", "Dropped", "Paused"
+  ]
+}
