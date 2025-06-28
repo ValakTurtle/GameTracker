@@ -18,13 +18,23 @@
         </label><br /><br />
 
         <label>Platform:<br />
-            <select name="platform" id="platform-select" style="width: 300px;">
-                <option></option>
-                {% for platform in platforms %}
-                    <option value="{{ platform }}" {% if game and game.platform == platform %}selected{% endif %}>{{ platform }}</option>
+        <select name="platforms" id="platform-select" multiple style="width: 300px;">
+            {% for group_name, platform_list in platform_groups.items() %}
+            <optgroup label="{{ group_name }}">
+                {% for platform in platform_list %}
+                <option value="{{ platform }}"
+                    {% if game and platform in (game.platform or '') %}selected{% endif %}>
+                    {{ platform }}
+                </option>
                 {% endfor %}
-            </select>
-        </label><br /><br />
+            </optgroup>
+            {% endfor %}
+        </select>
+        </label>
+
+        <br /><br />
+
+
 
         <label>Status:<br />
             <select name="status" id="status-select" style="width: 300px;">
@@ -64,7 +74,6 @@
       $(document).ready(function() {
         $('#platform-select').select2({
           placeholder: "Select or type platform",
-          tags: true,
           allowClear: true
         });
         $('#status-select').select2({

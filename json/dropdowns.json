@@ -1,9 +1,45 @@
 {
-  "platforms": [
-    "PC", "PlayStation 5", "PlayStation 4", "Xbox Series X", "Xbox One",
-    "Nintendo Switch", "Mobile", "Other"
-  ],
+  "platformGroups": {
+    "Nintendo": [
+      "NES",
+      "SNES",
+      "Nintendo 64",
+      "GameCube",
+      "Wii",
+      "Wii U",
+      "Nintendo Switch",
+      "Nintendo Switch 2",
+      "Game Boy",
+      "Game Boy Advance",
+      "Nintendo DS",
+      "Nintendo 3DS"
+    ],
+    "PlayStation": [
+      "PlayStation 1",
+      "PlayStation 2",
+      "PlayStation 3",
+      "PlayStation 4",
+      "PlayStation 5",
+      "PlayStation Portable",
+      "PlayStation Vita"
+    ],
+    "Xbox": [
+      "Xbox",
+      "Xbox 360",
+      "Xbox One",
+      "Xbox Series X"
+    ],
+    "Other": [
+      "PC",
+      "Mobile",
+      "Other"
+    ]
+  },
   "statuses": [
-    "Backlog", "Playing", "Completed", "Dropped", "Paused"
+    "Not Started",
+    "Playing",
+    "Completed",
+    "On Hold",
+    "Dropped"
   ]
 }

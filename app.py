@@ -3,11 +3,12 @@ from threading import Timer
 from flask import Flask, render_template, request, redirect, url_for
 from database import get_connection, create_table
 import json
+import os
 
 with open("json/dropdowns.json") as f:
     dropdown_data = json.load(f)
 
-PLATFORMS = dropdown_data["platforms"]
+PLATFORM_GROUPS = dropdown_data["platformGroups"]
 STATUSES = dropdown_data["statuses"]
 
 app = Flask(__name__)
@@ -25,7 +26,8 @@ def home():
 def add_game():
     if request.method == "POST":
         title = request.form.get("title")
-        platform = request.form.get("platform")
+        platforms = request.form.getlist("platforms")  # multi-select
+        platform_str = ",".join(platforms)
         status = request.form.get("status")
         rating = request.form.get("rating")
         cover_url = request.form.get("cover_url")
@@ -37,19 +39,18 @@ def add_game():
         conn.execute("""
             INSERT INTO games (title, platform, status, rating, cover_url, notes, start_date, finish_date)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (title, platform, status, rating, cover_url, notes, start_date, finish_date))
+        """, (title, platform_str, status, rating, cover_url, notes, start_date, finish_date))
         conn.commit()
         conn.close()
 
         return redirect(url_for("home"))
 
-    # GET request - show empty form
     return render_template(
         "game_form.html",
         game=None,
         form_action=url_for("add_game"),
         submit_text="Add Game",
-        platforms=PLATFORMS,
+        platform_groups=PLATFORM_GROUPS,
         statuses=STATUSES
     )
 
@@ -64,7 +65,8 @@ def edit_game(game_id):
 
     if request.method == "POST":
         title = request.form.get("title")
-        platform = request.form.get("platform")
+        platforms = request.form.getlist("platforms")
+        platform_str = ",".join(platforms)
         status = request.form.get("status")
         rating = request.form.get("rating")
         cover_url = request.form.get("cover_url")
@@ -76,10 +78,15 @@ def edit_game(game_id):
             UPDATE games
             SET title=?, platform=?, status=?, rating=?, cover_url=?, notes=?, start_date=?, finish_date=?
             WHERE id=?
-        """, (title, platform, status, rating, cover_url, notes, start_date, finish_date, game_id))
+        """, (title, platform_str, status, rating, cover_url, notes, start_date, finish_date, game_id))
         conn.commit()
         conn.close()
         return redirect(url_for("home"))
+
+    # split platforms for preselect
+    selected_platforms = []
+    if game["platform"]:
+        selected_platforms = game["platform"].split(",")
 
     conn.close()
     return render_template(
@@ -87,7 +94,7 @@ def edit_game(game_id):
         game=game,
         form_action=url_for("edit_game", game_id=game_id),
         submit_text="Save Changes",
-        platforms=PLATFORMS,
+        platform_groups=PLATFORM_GROUPS,
         statuses=STATUSES
     )
 
@@ -100,12 +107,9 @@ def delete_game(game_id):
     conn.close()
     return redirect(url_for("home"))
 
-
-
 if __name__ == "__main__":
-    # Open the browser after a short delay, so the server starts first
     def open_browser():
         webbrowser.open_new("http://127.0.0.1:5000/")
-
-    Timer(1, open_browser).start()
-    app.run(debug=True, use_reloader=False)  # Disable reloader to prevent multiple instances of the browser from opening
+    if os.environ.get("WERKZEUG_RUN_MAIN") != "true":
+        Timer(1, open_browser).start()
+    app.run(debug=True)
