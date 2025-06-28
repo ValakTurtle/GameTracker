@@ -50,12 +50,27 @@ def update_playing_to_on_hold():
 
 @app.route("/")
 def home():
-    update_playing_to_on_hold()  # Auto-update statuses on homepage load
+    update_playing_to_on_hold()
 
     conn = get_connection()
-    games = conn.execute("SELECT * FROM games").fetchall()
+    all_games = conn.execute("SELECT * FROM games").fetchall()
     conn.close()
-    return render_template("home.html", games=games)
+
+    # group by status
+    grouped_games = {
+        "Playing": [],
+        "On Hold": [],
+        "Not Started": [],
+        "Completed": [],
+    }
+
+    for game in all_games:
+        status = game["status"]
+        if status in grouped_games:
+            grouped_games[status].append(game)
+
+    return render_template("home.html", grouped_games=grouped_games)
+
 
 
 @app.route("/add", methods=["GET", "POST"])

@@ -1,32 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>My Game Tracker</title>
+  <meta charset="UTF-8" />
+  <title>My Game Tracker</title>
+  <!-- Bootstrap CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
 </head>
-<body>
-    <h1>My Games</h1>
-    <a href="{{ url_for('add_game') }}">Add New Game</a>
-    {% if games %}
-        <ul>
-        {% for game in games %}
-            <li>
-                <strong>{{ game['title'] }}</strong> - {{ game['platform'] }} - Status: {{ game['status'] }}
+<body class="container mt-4">
+  <h1>My Games</h1>
+  <a class="btn btn-primary mb-3" href="{{ url_for('add_game') }}">Add New Game</a>
 
-                {% if game['start_play_date'] %}
+  {% if grouped_games %}
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" id="statusTabs" role="tablist">
+      {% for status in grouped_games.keys() %}
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link {% if loop.first %}active{% endif %}"
+            id="{{ status|lower|replace(' ', '_') }}-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#{{ status|lower|replace(' ', '_') }}"
+            type="button"
+            role="tab"
+            aria-controls="{{ status|lower|replace(' ', '_') }}"
+            aria-selected="{% if loop.first %}true{% else %}false{% endif %}"
+          >
+            {{ status }}
+          </button>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content mt-3" id="statusTabsContent">
+      {% for status, games in grouped_games.items() %}
+        <div
+          class="tab-pane fade {% if loop.first %}show active{% endif %}"
+          id="{{ status|lower|replace(' ', '_') }}"
+          role="tabpanel"
+          aria-labelledby="{{ status|lower|replace(' ', '_') }}-tab"
+        >
+          {% if games %}
+            <ul class="list-group">
+              {% for game in games %}
+                <li class="list-group-item">
+                  <strong>{{ game['title'] }}</strong> - {{ game['platform'] }}
+                  {% if game['start_play_date'] %}
                     <br />
                     <small>Status set to 'Playing' on: {{ game['start_play_date'] }}</small>
-                {% endif %}
+                  {% endif %}
+                  <div class="mt-2">
+                    <a class="btn btn-sm btn-secondary" href="{{ url_for('edit_game', game_id=game['id']) }}">Edit</a>
+                    <form
+                      action="{{ url_for('delete_game', game_id=game['id']) }}"
+                      method="post"
+                      style="display:inline;"
+                    >
+                      <button
+                        type="submit"
+                        class="btn btn-sm btn-danger"
+                        onclick="return confirm('Are you sure you want to delete this game?');"
+                      >
+                        Delete
+                      </button>
+                    </form>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p>No games in this category.</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No games yet!</p>
+  {% endif %}
 
-                <form action="{{ url_for('delete_game', game_id=game['id']) }}" method="post" style="display:inline;">
-                    <button type="submit" onclick="return confirm('Are you sure you want to delete this game?');">Delete</button>
-                </form>
-                <a href="{{ url_for('edit_game', game_id=game['id']) }}">Edit</a>
-            </li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>No games yet!</p>
-    {% endif %}
+  <!-- Bootstrap JS (for tabs to work) -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+  ></script>
 </body>
 </html>
