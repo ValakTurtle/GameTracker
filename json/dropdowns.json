@@ -40,7 +40,6 @@
     "Not Started",
     "Playing",
     "Completed",
-    "On Hold",
-    "Dropped"
+    "On Hold"
   ]
 }

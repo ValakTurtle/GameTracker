@@ -22,19 +22,12 @@
             {% for group_name, platform_list in platform_groups.items() %}
             <optgroup label="{{ group_name }}">
                 {% for platform in platform_list %}
-                <option value="{{ platform }}"
-                    {% if game and platform in (game.platform or '') %}selected{% endif %}>
-                    {{ platform }}
-                </option>
+                <option value="{{ platform }}" {% if platform in selected_platforms %}selected{% endif %}>{{ platform }}</option>
                 {% endfor %}
             </optgroup>
             {% endfor %}
         </select>
-        </label>
-
-        <br /><br />
-
-
+        </label><br /><br />
 
         <label>Status:<br />
             <select name="status" id="status-select" style="width: 300px;">

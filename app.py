@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for
 from database import get_connection, create_table
 import json
 import os
+from datetime import datetime, timedelta
 
 with open("json/dropdowns.json") as f:
     dropdown_data = json.load(f)
@@ -15,18 +16,53 @@ app = Flask(__name__)
 
 create_table()
 
+def update_playing_to_on_hold():
+    """Check all games currently 'Playing' and if started >21 days ago, move to 'On Hold'."""
+    conn = get_connection()
+    now = datetime.now()
+    three_weeks_ago = now - timedelta(days=21)
+
+    # Fetch games with status 'Playing' and a start_play_date older than 21 days
+    games_to_hold = conn.execute("""
+        SELECT id, start_play_date FROM games
+        WHERE status = 'Playing' AND start_play_date IS NOT NULL
+    """).fetchall()
+
+    for game in games_to_hold:
+        start_play_date_str = game["start_play_date"]
+        if start_play_date_str:
+            try:
+                start_play_date = datetime.strptime(start_play_date_str, "%Y-%m-%d")
+                if start_play_date <= three_weeks_ago:
+                    # Update status to 'On Hold', keep status_change_date current
+                    conn.execute("""
+                        UPDATE games
+                        SET status = 'On Hold',
+                            status_change_date = ?
+                        WHERE id = ?
+                    """, (now.strftime("%Y-%m-%d"), game["id"]))
+            except Exception as e:
+                print(f"Error parsing date for game id {game['id']}: {e}")
+
+    conn.commit()
+    conn.close()
+
+
 @app.route("/")
 def home():
+    update_playing_to_on_hold()  # Auto-update statuses on homepage load
+
     conn = get_connection()
     games = conn.execute("SELECT * FROM games").fetchall()
     conn.close()
     return render_template("home.html", games=games)
 
+
 @app.route("/add", methods=["GET", "POST"])
 def add_game():
     if request.method == "POST":
         title = request.form.get("title")
-        platforms = request.form.getlist("platforms")  # multi-select
+        platforms = request.form.getlist("platforms")
         platform_str = ",".join(platforms)
         status = request.form.get("status")
         rating = request.form.get("rating")
@@ -35,11 +71,19 @@ def add_game():
         start_date = request.form.get("start_date")
         finish_date = request.form.get("finish_date")
 
+        now_str = datetime.now().strftime("%Y-%m-%d")
+
+        # Set status_change_date to now on add
+        status_change_date = now_str
+
+        # Set start_play_date if status is Playing, else None
+        start_play_date = now_str if status == "Playing" else None
+
         conn = get_connection()
         conn.execute("""
-            INSERT INTO games (title, platform, status, rating, cover_url, notes, start_date, finish_date)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (title, platform_str, status, rating, cover_url, notes, start_date, finish_date))
+            INSERT INTO games (title, platform, status, rating, cover_url, notes, start_date, finish_date, status_change_date, start_play_date)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (title, platform_str, status, rating, cover_url, notes, start_date, finish_date, status_change_date, start_play_date))
         conn.commit()
         conn.close()
 
@@ -74,11 +118,35 @@ def edit_game(game_id):
         start_date = request.form.get("start_date")
         finish_date = request.form.get("finish_date")
 
+        now_str = datetime.now().strftime("%Y-%m-%d")
+
+        # Prepare update params
+        params = [title, platform_str, status, rating, cover_url, notes, start_date, finish_date]
+
+        # Logic to update status_change_date and start_play_date if status changed:
+        if status != game["status"]:
+            params.append(now_str)  # status_change_date = now
+
+            # If changed to Playing, always reset start_play_date to now
+            if status == "Playing":
+                params.append(now_str)
+            else:
+                # for other statuses, keep the existing start_play_date
+                params.append(game["start_play_date"])
+        else:
+            # No status change: keep existing dates
+            params.append(game["status_change_date"])
+            params.append(game["start_play_date"])
+
+        params.append(game_id)  # for WHERE clause
+
         conn.execute("""
             UPDATE games
-            SET title=?, platform=?, status=?, rating=?, cover_url=?, notes=?, start_date=?, finish_date=?
+            SET title=?, platform=?, status=?, rating=?, cover_url=?, notes=?, start_date=?, finish_date=?,
+                status_change_date=?, start_play_date=?
             WHERE id=?
-        """, (title, platform_str, status, rating, cover_url, notes, start_date, finish_date, game_id))
+        """, params)
+
         conn.commit()
         conn.close()
         return redirect(url_for("home"))
@@ -95,7 +163,8 @@ def edit_game(game_id):
         form_action=url_for("edit_game", game_id=game_id),
         submit_text="Save Changes",
         platform_groups=PLATFORM_GROUPS,
-        statuses=STATUSES
+        statuses=STATUSES,
+        selected_platforms=selected_platforms  # pass for preselect
     )
 
 
@@ -106,6 +175,7 @@ def delete_game(game_id):
     conn.commit()
     conn.close()
     return redirect(url_for("home"))
+
 
 if __name__ == "__main__":
     def open_browser():
