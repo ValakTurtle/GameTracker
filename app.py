@@ -43,20 +43,25 @@ def add_game():
 
         return redirect(url_for("home"))
 
-    # GET request - show the form
-    return render_template("add_game.html", platforms=PLATFORMS, statuses=STATUSES)
+    # GET request - show empty form
+    return render_template(
+        "game_form.html",
+        game=None,
+        form_action=url_for("add_game"),
+        submit_text="Add Game",
+        platforms=PLATFORMS,
+        statuses=STATUSES
+    )
 
-@app.route("/delete/<int:game_id>", methods=["POST"])
-def delete_game(game_id):
-    conn = get_connection()
-    conn.execute("DELETE FROM games WHERE id = ?", (game_id,))
-    conn.commit()
-    conn.close()
-    return redirect(url_for("home"))
 
 @app.route("/edit/<int:game_id>", methods=["GET", "POST"])
 def edit_game(game_id):
     conn = get_connection()
+    game = conn.execute("SELECT * FROM games WHERE id = ?", (game_id,)).fetchone()
+    if game is None:
+        conn.close()
+        return "Game not found!", 404
+
     if request.method == "POST":
         title = request.form.get("title")
         platform = request.form.get("platform")
@@ -76,13 +81,24 @@ def edit_game(game_id):
         conn.close()
         return redirect(url_for("home"))
 
-    game = conn.execute("SELECT * FROM games WHERE id = ?", (game_id,)).fetchone()
     conn.close()
-    if game is None:
-        return "Game not found!", 404
+    return render_template(
+        "game_form.html",
+        game=game,
+        form_action=url_for("edit_game", game_id=game_id),
+        submit_text="Save Changes",
+        platforms=PLATFORMS,
+        statuses=STATUSES
+    )
 
-    return render_template("edit_game.html", game=game, platforms=PLATFORMS, statuses=STATUSES)
 
+@app.route("/delete/<int:game_id>", methods=["POST"])
+def delete_game(game_id):
+    conn = get_connection()
+    conn.execute("DELETE FROM games WHERE id = ?", (game_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for("home"))
 
 
 
@@ -92,4 +108,4 @@ if __name__ == "__main__":
         webbrowser.open_new("http://127.0.0.1:5000/")
 
     Timer(1, open_browser).start()
-    app.run(debug=True, use_reloader=False)  # Disable reloader to prevent multiple instances of the browser from opening
+    #app.run(debug=True, use_reloader=False)  # Disable reloader to prevent multiple instances of the browser from opening

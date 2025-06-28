@@ -2,84 +2,77 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>Add New Game</title>
+    <title>{{ submit_text }}</title>
     <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
-    <!-- jQuery (required by Select2) -->
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
 </head>
 <body>
-    <h1>Add a New Game</h1>
-    <form method="post" action="{{ url_for('add_game') }}">
+    <h1>{{ submit_text }}</h1>
+    <form method="post" action="{{ form_action }}">
         <label>Title:<br />
-            <input type="text" name="title" required />
+            <input type="text" name="title" required value="{{ game.title if game else '' }}" />
         </label><br /><br />
 
         <label>Platform:<br />
             <select name="platform" id="platform-select" style="width: 300px;">
-                <option></option> <!-- for placeholder -->
+                <option></option>
                 {% for platform in platforms %}
-                    <option value="{{ platform }}">{{ platform }}</option>
+                    <option value="{{ platform }}" {% if game and game.platform == platform %}selected{% endif %}>{{ platform }}</option>
                 {% endfor %}
             </select>
         </label><br /><br />
-
 
         <label>Status:<br />
             <select name="status" id="status-select" style="width: 300px;">
                 <option></option>
                 {% for status in statuses %}
-                    <option value="{{ status }}">{{ status }}</option>
+                    <option value="{{ status }}" {% if game and game.status == status %}selected{% endif %}>{{ status }}</option>
                 {% endfor %}
             </select>
         </label><br /><br />
 
-
         <label>Rating (1-10):<br />
-            <input type="number" name="rating" min="1" max="10" />
+            <input type="number" name="rating" min="1" max="10" value="{{ game.rating if game and game.rating is not none else '' }}" />
         </label><br /><br />
 
         <label>Cover Image URL:<br />
-            <input type="url" name="cover_url" />
+            <input type="url" name="cover_url" value="{{ game.cover_url if game else '' }}" />
         </label><br /><br />
 
         <label>Notes:<br />
-            <textarea name="notes" rows="4" cols="40"></textarea>
+            <textarea name="notes" rows="4" cols="40">{{ game.notes if game else '' }}</textarea>
         </label><br /><br />
 
         <label>Start Date:<br />
-            <input type="date" name="start_date" />
+            <input type="date" name="start_date" value="{{ game.start_date if game else '' }}" />
         </label><br /><br />
 
         <label>Finish Date:<br />
-            <input type="date" name="finish_date" />
+            <input type="date" name="finish_date" value="{{ game.finish_date if game else '' }}" />
         </label><br /><br />
 
-        <button type="submit">Add Game</button>
+        <button type="submit">{{ submit_text }}</button>
     </form>
     <br />
     <a href="{{ url_for('home') }}">Back to games list</a>
 
     <script>
-    $(document).ready(function() {
+      $(document).ready(function() {
         $('#platform-select').select2({
-        placeholder: "Select or type platform",
-        tags: true,
-        allowClear: true
+          placeholder: "Select or type platform",
+          tags: true,
+          allowClear: true
         });
         $('#status-select').select2({
-        placeholder: "Select or type status",
-        tags: true,
-        allowClear: true
+          placeholder: "Select or type status",
+          tags: true,
+          allowClear: true
         });
-    });
+      });
     </script>
-
-
 </body>
 </html>
