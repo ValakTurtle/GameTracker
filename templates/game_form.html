@@ -38,8 +38,8 @@
             </select>
         </label><br /><br />
 
-        <label>Rating (1-10):<br />
-            <input type="number" name="rating" min="1" max="10" value="{{ game.rating if game and game.rating is not none else '' }}" />
+        <label>Rating (1-5):<br />
+            <input type="number" name="rating" min="1" max="5" value="{{ game.rating if game and game.rating is not none else '' }}" />
         </label><br /><br />
 
         <label>Cover Image URL:<br />
@@ -48,14 +48,6 @@
 
         <label>Notes:<br />
             <textarea name="notes" rows="4" cols="40">{{ game.notes if game else '' }}</textarea>
-        </label><br /><br />
-
-        <label>Start Date:<br />
-            <input type="date" name="start_date" value="{{ game.start_date if game else '' }}" />
-        </label><br /><br />
-
-        <label>Finish Date:<br />
-            <input type="date" name="finish_date" value="{{ game.finish_date if game else '' }}" />
         </label><br /><br />
 
         <button type="submit">{{ submit_text }}</button>

@@ -72,7 +72,6 @@ def home():
     return render_template("home.html", grouped_games=grouped_games)
 
 
-
 @app.route("/add", methods=["GET", "POST"])
 def add_game():
     if request.method == "POST":
@@ -83,22 +82,42 @@ def add_game():
         rating = request.form.get("rating")
         cover_url = request.form.get("cover_url")
         notes = request.form.get("notes")
-        start_date = request.form.get("start_date")
-        finish_date = request.form.get("finish_date")
 
         now_str = datetime.now().strftime("%Y-%m-%d")
 
-        # Set status_change_date to now on add
+        # status_change_date always now
         status_change_date = now_str
 
-        # Set start_play_date if status is Playing, else None
-        start_play_date = now_str if status == "Playing" else None
+        # handle start_play_date and start_date
+        if status == "Playing":
+            start_play_date = now_str
+            start_date = now_str
+            finish_date = None
+        elif status == "Completed":
+            start_play_date = None  # in case they skipped Playing status
+            start_date = None
+            finish_date = now_str
+        else:
+            start_play_date = None
+            start_date = None
+            finish_date = None
 
         conn = get_connection()
         conn.execute("""
             INSERT INTO games (title, platform, status, rating, cover_url, notes, start_date, finish_date, status_change_date, start_play_date)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (title, platform_str, status, rating, cover_url, notes, start_date, finish_date, status_change_date, start_play_date))
+        """, (
+            title,
+            platform_str,
+            status,
+            rating,
+            cover_url,
+            notes,
+            start_date,
+            finish_date,
+            status_change_date,
+            start_play_date,
+        ))
         conn.commit()
         conn.close()
 
@@ -201,7 +220,7 @@ if __name__ == "__main__":
 
 
 
-
+# Have an option for list mode or grid mode
 # Make the Cover Image URL work
 # Remove game rating?
 # Have the games be sorted in alphabetical order
