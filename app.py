@@ -221,7 +221,7 @@ if __name__ == "__main__":
 
 
 # Have an option for list mode or grid mode
-# Make the Cover Image URL work
-# Remove game rating?
-# Have the games be sorted in alphabetical order
+    # Make the Cover Image URL work
+    # Remove game rating?
+# Have the games be sorted in alphabetical order (or maybe by start_date for Playing?)
 # Remove Start Date and Finish Date sections in Add Game page, will have that stuff be automatic

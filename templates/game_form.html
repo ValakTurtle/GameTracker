@@ -53,7 +53,8 @@
         <button type="submit">{{ submit_text }}</button>
     </form>
     <br />
-    <a href="{{ url_for('home') }}">Back to games list</a>
+    <!-- Back button with tab support -->
+    <a id="back-link" href="{{ url_for('home') }}">Back to games list</a>
 
     <script>
       $(document).ready(function() {
@@ -66,6 +67,15 @@
           tags: true,
           allowClear: true
         });
+
+        // read tab parameter from URL
+        const params = new URLSearchParams(window.location.search);
+        const tab = params.get("tab");
+        if (tab) {
+          // modify Back link to include tab param
+          const backLink = document.getElementById("back-link");
+          backLink.href += "?tab=" + encodeURIComponent(tab);
+        }
       });
     </script>
 </body>

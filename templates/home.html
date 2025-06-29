@@ -19,14 +19,13 @@
       {% for status in grouped_games.keys() %}
         <li class="nav-item" role="presentation">
           <button
-            class="nav-link {% if loop.first %}active{% endif %}"
+            class="nav-link"
             id="{{ status|lower|replace(' ', '_') }}-tab"
             data-bs-toggle="tab"
             data-bs-target="#{{ status|lower|replace(' ', '_') }}"
             type="button"
             role="tab"
             aria-controls="{{ status|lower|replace(' ', '_') }}"
-            aria-selected="{% if loop.first %}true{% else %}false{% endif %}"
           >
             {{ status }}
           </button>
@@ -38,7 +37,7 @@
     <div class="tab-content mt-3" id="statusTabsContent">
       {% for status, games in grouped_games.items() %}
         <div
-          class="tab-pane fade {% if loop.first %}show active{% endif %}"
+          class="tab-pane fade"
           id="{{ status|lower|replace(' ', '_') }}"
           role="tabpanel"
           aria-labelledby="{{ status|lower|replace(' ', '_') }}-tab"
@@ -53,7 +52,12 @@
                     <small>Status set to 'Playing' on: {{ game['start_play_date'] }}</small>
                   {% endif %}
                   <div class="mt-2">
-                    <a class="btn btn-sm btn-secondary" href="{{ url_for('edit_game', game_id=game['id']) }}">Edit</a>
+                    <a
+                      class="btn btn-sm btn-secondary"
+                      href="{{ url_for('edit_game', game_id=game['id']) }}?tab={{ status|lower|replace(' ', '_') }}"
+                    >
+                      Edit
+                    </a>
                     <form
                       action="{{ url_for('delete_game', game_id=game['id']) }}"
                       method="post"
@@ -81,9 +85,32 @@
     <p>No games yet!</p>
   {% endif %}
 
-  <!-- Bootstrap JS (for tabs to work) -->
+  <!-- Bootstrap JS -->
   <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
   ></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // get tab from URL
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get("tab");
+
+      if (tab) {
+        // activate the correct tab
+        const trigger = document.querySelector(`#${tab}-tab`);
+        if (trigger) {
+          const tabInstance = new bootstrap.Tab(trigger);
+          tabInstance.show();
+        }
+      } else {
+        // fallback to first tab
+        const firstTrigger = document.querySelector(".nav-link");
+        if (firstTrigger) {
+          const tabInstance = new bootstrap.Tab(firstTrigger);
+          tabInstance.show();
+        }
+      }
+    });
+  </script>
 </body>
 </html>
