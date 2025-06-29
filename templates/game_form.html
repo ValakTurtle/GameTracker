@@ -14,28 +14,28 @@
     <h1>{{ submit_text }}</h1>
     <form method="post" action="{{ form_action }}">
         <label>Title:<br />
-            <input type="text" name="title" required value="{{ game.title if game else '' }}" />
+        <input type="text" name="title" required value="{{ game.title if game else '' }}" />
         </label><br /><br />
 
         <label>Platform:<br />
-        <select name="platforms" id="platform-select" multiple style="width: 300px;">
+        <select name="platforms" id="platform-select" multiple required style="width: 300px;">
             {% for group_name, platform_list in platform_groups.items() %}
             <optgroup label="{{ group_name }}">
-                {% for platform in platform_list %}
-                <option value="{{ platform }}" {% if platform in selected_platforms %}selected{% endif %}>{{ platform }}</option>
-                {% endfor %}
+            {% for platform in platform_list %}
+            <option value="{{ platform }}" {% if platform in selected_platforms %}selected{% endif %}>{{ platform }}</option>
+            {% endfor %}
             </optgroup>
             {% endfor %}
         </select>
         </label><br /><br />
 
         <label>Status:<br />
-            <select name="status" id="status-select" style="width: 300px;">
-                <option></option>
-                {% for status in statuses %}
-                    <option value="{{ status }}" {% if game and game.status == status %}selected{% endif %}>{{ status }}</option>
-                {% endfor %}
-            </select>
+        <select name="status" id="status-select" required style="width: 300px;">
+            <option></option>
+            {% for status in statuses %}
+            <option value="{{ status }}" {% if game and game.status == status %}selected{% endif %}>{{ status }}</option>
+            {% endfor %}
+        </select>
         </label><br /><br />
 
         <label>Rating (1-5):<br />

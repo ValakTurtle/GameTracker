@@ -83,6 +83,10 @@ def add_game():
         cover_url = request.form.get("cover_url")
         notes = request.form.get("notes")
 
+        # check required fields
+        if not title or not status or not platforms:
+            return "Title, status, and at least one platform are required.", 400
+
         now_str = datetime.now().strftime("%Y-%m-%d")
 
         # status_change_date always now
