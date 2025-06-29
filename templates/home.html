@@ -19,13 +19,14 @@
       {% for status in grouped_games.keys() %}
         <li class="nav-item" role="presentation">
           <button
-            class="nav-link"
+            class="nav-link{% if status == 'Playing' %} active{% endif %}"
             id="{{ status|lower|replace(' ', '_') }}-tab"
             data-bs-toggle="tab"
             data-bs-target="#{{ status|lower|replace(' ', '_') }}"
             type="button"
             role="tab"
             aria-controls="{{ status|lower|replace(' ', '_') }}"
+            aria-selected="{% if status == 'Playing' %}true{% else %}false{% endif %}"
           >
             {{ status }}
           </button>
@@ -37,7 +38,7 @@
     <div class="tab-content mt-3" id="statusTabsContent">
       {% for status, games in grouped_games.items() %}
         <div
-          class="tab-pane fade"
+          class="tab-pane fade{% if status == 'Playing' %} show active{% endif %}"
           id="{{ status|lower|replace(' ', '_') }}"
           role="tabpanel"
           aria-labelledby="{{ status|lower|replace(' ', '_') }}-tab"
@@ -58,16 +59,9 @@
                     >
                       Edit
                     </a>
-                    <form
-                      action="{{ url_for('delete_game', game_id=game['id']) }}"
-                      method="post"
-                      style="display:inline;"
-                    >
-                      <button
-                        type="submit"
-                        class="btn btn-sm btn-danger"
-                        onclick="return confirm('Are you sure you want to delete this game?');"
-                      >
+                    <form action="{{ url_for('delete_game', game_id=game['id']) }}" method="post" style="display:inline;">
+                      <input type="hidden" name="tab" value="{{ status }}">
+                      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this game?');">
                         Delete
                       </button>
                     </form>
@@ -90,24 +84,30 @@
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
   ></script>
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      // get tab from URL
-      const params = new URLSearchParams(window.location.search);
-      const tab = params.get("tab");
-
-      if (tab) {
-        // activate the correct tab
-        const trigger = document.querySelector(`#${tab}-tab`);
-        if (trigger) {
-          const tabInstance = new bootstrap.Tab(trigger);
-          tabInstance.show();
-        }
-      } else {
-        // fallback to first tab
-        const firstTrigger = document.querySelector(".nav-link");
-        if (firstTrigger) {
-          const tabInstance = new bootstrap.Tab(firstTrigger);
-          tabInstance.show();
+    document.addEventListener("DOMContentLoaded", function() {
+      // Check if there's a tab parameter in the URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const activeTab = urlParams.get('tab');
+      
+      if (activeTab) {
+        // Find the tab button and content pane for the specified tab
+        const tabButton = document.getElementById(activeTab + '-tab');
+        const tabPane = document.getElementById(activeTab);
+        
+        if (tabButton && tabPane) {
+          // Remove active classes from all tabs and panes
+          document.querySelectorAll('.nav-link').forEach(tab => {
+            tab.classList.remove('active');
+            tab.setAttribute('aria-selected', 'false');
+          });
+          document.querySelectorAll('.tab-pane').forEach(pane => {
+            pane.classList.remove('show', 'active');
+          });
+          
+          // Add active classes to the target tab and pane
+          tabButton.classList.add('active');
+          tabButton.setAttribute('aria-selected', 'true');
+          tabPane.classList.add('show', 'active');
         }
       }
     });

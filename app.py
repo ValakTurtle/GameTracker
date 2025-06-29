@@ -208,11 +208,15 @@ def edit_game(game_id):
 
 @app.route("/delete/<int:game_id>", methods=["POST"])
 def delete_game(game_id):
+    tab = request.form.get("tab", "Playing")  # default to Playing if missing
     conn = get_connection()
     conn.execute("DELETE FROM games WHERE id = ?", (game_id,))
     conn.commit()
     conn.close()
-    return redirect(url_for("home"))
+    
+    # Convert the tab status to the URL format (lowercase with underscores)
+    tab_param = tab.lower().replace(' ', '_')
+    return redirect(url_for("home") + f"?tab={tab_param}")
 
 
 if __name__ == "__main__":
